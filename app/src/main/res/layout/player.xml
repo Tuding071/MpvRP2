@@ -236,17 +236,36 @@
             android:visibility="gone"
             tools:text="[gesture]" />
 
+        <!-- TOP CONTROLS - Now with play button on left -->
         <LinearLayout
             android:id="@+id/top_controls"
             style="?buttonBarStyle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:alpha="0.5"
             android:background="#bf000000"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="8dp">
 
+            <!-- LEFT SIDE: Play button -->
+            <ImageButton
+                android:id="@+id/playBtn"
+                style="?buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="40dp"
+                android:minHeight="40dp"
+                android:padding="4dp"
+                app:srcCompat="@drawable/ic_play_arrow_black_24dp"
+                app:tint="@android:color/white" />
+
+            <!-- SPACER to push right-side buttons to the end -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- RIGHT SIDE: Lock, PiP, and Menu buttons -->
             <ImageButton
                 android:id="@+id/topLockBtn"
                 style="?buttonBarButtonStyle"
