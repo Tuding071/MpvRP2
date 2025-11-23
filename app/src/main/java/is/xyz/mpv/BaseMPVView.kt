@@ -88,14 +88,14 @@ abstract class BaseMPVView(context: Context, attrs: AttributeSet) : FrameLayout(
         // Inflate or create overlay UI programmatically
         val overlayView = LayoutInflater.from(context).inflate(R.layout.player_overlay, this, false)
         addView(overlayView)
-        
-        // Find views
-        seekBar = findViewById(R.id.seekBar)
-        timeText = findViewById(R.id.timeText)
-        totalTimeText = findViewById(R.id.totalTimeText)
-        feedbackText = findViewById(R.id.feedbackText)
-        videoInfoText = findViewById(R.id.videoInfoText)
-        controlsContainer = findViewById(R.id.controlsContainer)
+
+        // Find views - now they're inside the FrameLayout
+        seekBar = overlayView.findViewById(R.id.seekBar)
+        timeText = overlayView.findViewById(R.id.timeText)
+        totalTimeText = overlayView.findViewById(R.id.totalTimeText)
+        feedbackText = overlayView.findViewById(R.id.feedbackText)
+        videoInfoText = overlayView.findViewById(R.id.videoInfoText)
+        controlsContainer = overlayView.findViewById(R.id.controlsContainer)
         
         // Setup seek bar listener
         seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
