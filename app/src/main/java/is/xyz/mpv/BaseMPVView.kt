@@ -1,7 +1,6 @@
 package `is`.xyz.mpv
 
 import android.content.Context
-import android.graphics.Color
 import android.util.AttributeSet
 import android.util.Log
 import android.view.GestureDetector
@@ -9,11 +8,9 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import android.view.View
-import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.ProgressBar
+import android.widget.SeekBar
 import android.widget.TextView
 import androidx.core.view.isVisible
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +27,7 @@ abstract class BaseMPVView(context: Context, attrs: AttributeSet) : FrameLayout(
     private val gestureDetector: GestureDetector
     
     // UI Components from your overlay
-    private lateinit var seekBar: ProgressBar
+    private lateinit var seekBar: SeekBar
     private lateinit var timeText: TextView
     private lateinit var totalTimeText: TextView
     private lateinit var feedbackText: TextView
@@ -72,7 +69,7 @@ abstract class BaseMPVView(context: Context, attrs: AttributeSet) : FrameLayout(
     init {
         // Create surface view
         surfaceView = SurfaceView(context).apply {
-            layoutParams = LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
             holder.addCallback(this@BaseMPVView)
         }
         addView(surfaceView)
@@ -97,15 +94,15 @@ abstract class BaseMPVView(context: Context, attrs: AttributeSet) : FrameLayout(
         videoInfoText = overlayView.findViewById(R.id.videoInfoText)
         controlsContainer = overlayView.findViewById(R.id.controlsContainer)
         
-        // Setup seek bar listener
-        seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+        // Setup seek bar listener - FIXED: Now using proper SeekBar type
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
                     handleProgressBarDrag(progress.toDouble())
                 }
             }
             
-            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
                 cancelAutoHide()
                 isSeeking = true
                 wasPlayingBeforeSeek = MPVLib.getPropertyBoolean("pause") == false
@@ -114,7 +111,7 @@ abstract class BaseMPVView(context: Context, attrs: AttributeSet) : FrameLayout(
                 }
             }
             
-            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
                 if (wasPlayingBeforeSeek) {
                     coroutineScope.launch {
                         delay(100)
