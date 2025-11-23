@@ -2,7 +2,6 @@ package `is`.xyz.mpv
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.SurfaceView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -36,7 +35,7 @@ class ComposeMPVView @JvmOverloads constructor(
         
         AndroidView(
             factory = { ctx ->
-                baseMpvView = object : BaseMPVView(ctx, attrs) {
+                baseMpvView = object : BaseMPVView(ctx, null) {
                     override fun initOptions() {
                         // Initialize any MPV options here
                     }
