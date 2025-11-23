@@ -27,7 +27,7 @@
             android:layout_marginTop="60dp"
             android:layout_marginRight="24dp"
             android:layout_marginBottom="60dp"
-            android:background="#bf000000"
+            android:background="@android:color/transparent"
             android:orientation="vertical">
 
             <LinearLayout
@@ -73,13 +73,70 @@
 
             </LinearLayout>
 
+            <!-- BUTTONS GROUP MOVED UP -->
+            <LinearLayout
+                android:id="@+id/controls_button_group"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layoutDirection="ltr"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:background="#bf000000"
+                android:padding="8dp">
+
+                <ImageButton
+                    android:id="@+id/cycleAudioBtn"
+                    style="?buttonBarButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_audiotrack_black_24dp"
+                    app:tint="@android:color/white" />
+
+                <ImageButton
+                    android:id="@+id/cycleSubsBtn"
+                    style="?buttonBarButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_subtitles_black_24dp"
+                    app:tint="@android:color/white" />
+
+                <ImageButton
+                    android:id="@+id/playBtn"
+                    style="?buttonBarButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    app:tint="@android:color/white"
+                    tools:src="@drawable/ic_play_arrow_black_24dp" />
+
+                <Button
+                    android:id="@+id/cycleDecoderBtn"
+                    style="?buttonBarButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    tools:text="HW+" />
+
+                <Button
+                    android:id="@+id/cycleSpeedBtn"
+                    style="?buttonBarButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    tools:text="1.00X" />
+
+            </LinearLayout>
+
+            <!-- SEEKBAR GROUP MOVED DOWN (now at bottom) -->
             <LinearLayout
                 android:id="@+id/controls_seekbar_group"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layoutDirection="ltr"
                 android:orientation="horizontal"
-                android:weightSum="100">
+                android:weightSum="100"
+                android:background="#bf000000"
+                android:padding="8dp">
 
                 <ImageButton
                     android:id="@+id/prevBtn"
@@ -89,7 +146,7 @@
                     android:minWidth="48dp"
                     android:minHeight="48dp"
                     app:srcCompat="@drawable/ic_skip_previous_black_24dp"
-                    app:tint="@color/tint_normal" />
+                    app:tint="@android:color/white" />
 
                 <TextView
                     android:id="@+id/playbackPositionTxt"
@@ -107,7 +164,9 @@
                     android:layout_gravity="center_vertical"
                     android:layout_weight="100"
                     android:minHeight="24dp"
-                    android:progressBackgroundTint="@color/tint_seekbar_bg" />
+                    android:progressTint="@android:color/white"
+                    android:thumbTint="@android:color/white"
+                    android:progressBackgroundTint="@android:color/white" />
 
                 <TextView
                     android:id="@+id/playbackDurationTxt"
@@ -126,58 +185,7 @@
                     android:minWidth="48dp"
                     android:minHeight="48dp"
                     app:srcCompat="@drawable/ic_skip_next_black_24dp"
-                    app:tint="@color/tint_normal" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/controls_button_group"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layoutDirection="ltr"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <ImageButton
-                    android:id="@+id/cycleAudioBtn"
-                    style="?buttonBarButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_audiotrack_black_24dp"
-                    app:tint="@color/tint_normal" />
-
-                <ImageButton
-                    android:id="@+id/cycleSubsBtn"
-                    style="?buttonBarButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_subtitles_black_24dp"
-                    app:tint="@color/tint_normal" />
-
-                <ImageButton
-                    android:id="@+id/playBtn"
-                    style="?buttonBarButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@android:color/white"
-                    app:tint="@color/tint_normal"
-                    tools:src="@drawable/ic_play_arrow_black_24dp" />
-
-                <Button
-                    android:id="@+id/cycleDecoderBtn"
-                    style="?buttonBarButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@android:color/white"
-                    tools:text="HW+" />
-
-                <Button
-                    android:id="@+id/cycleSpeedBtn"
-                    style="?buttonBarButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@android:color/white"
-                    tools:text="1.00X" />
+                    app:tint="@android:color/white" />
 
             </LinearLayout>
         </LinearLayout>
@@ -234,7 +242,7 @@
                 android:minHeight="40dp"
                 android:padding="4dp"
                 app:srcCompat="@drawable/ic_lock_24dp"
-                app:tint="@color/tint_normal" />
+                app:tint="@android:color/white" />
 
             <ImageButton
                 android:id="@+id/topPiPBtn"
@@ -245,7 +253,7 @@
                 android:minHeight="40dp"
                 android:padding="4dp"
                 app:srcCompat="@drawable/ic_picture_in_picture_24dp"
-                app:tint="@color/tint_normal" />
+                app:tint="@android:color/white" />
 
             <ImageButton
                 android:id="@+id/topMenuBtn"
@@ -256,7 +264,7 @@
                 android:minHeight="40dp"
                 android:padding="4dp"
                 app:srcCompat="@drawable/ic_settings_black_24dp"
-                app:tint="@color/tint_normal" />
+                app:tint="@android:color/white" />
 
         </LinearLayout>
 
