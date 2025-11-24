@@ -1,5 +1,4 @@
 package is.xyz.mpv
-
 import android.content.Context
 import android.view.Surface
 
