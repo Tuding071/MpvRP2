@@ -18,11 +18,12 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+          cache: 'gradle'  # Added gradle caching
 
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake meson ninja-build yasm nasm gettext python3 git unzip wget ccache
+          sudo apt-get install -y cmake meson ninja-build yasm nasm gettext python3 git unzip wget ccache apksigner  # Added apksigner
 
       - name: Download Android NDK r23c
         run: |
@@ -83,16 +84,9 @@ jobs:
             -keypass android \
             -dname "CN=mpv, OU=Dev, O=mpv, L=Internet, ST=World, C=US"
 
-      - name: Find apksigner path
-        id: apksigner
+      - name: Sign APK with system apksigner
         run: |
-          APK_SIGNER_PATH=$(find $ANDROID_HOME/build-tools -name apksigner | sort | tail -n 1)
-          echo "apksigner_path=$APK_SIGNER_PATH" >> $GITHUB_OUTPUT
-          echo "Found apksigner at: $APK_SIGNER_PATH"
-
-      - name: Sign APK
-        run: |
-          "${{ steps.apksigner.outputs.apksigner_path }}" sign \
+          apksigner sign \
             --ks test-release-key.jks \
             --ks-pass pass:android \
             --key-pass pass:android \
@@ -102,43 +96,47 @@ jobs:
 
       - name: Verify signed APK
         run: |
-          "${{ steps.apksigner.outputs.apksigner_path }}" verify --verbose --print-certs signed-release.apk
+          apksigner verify --verbose --print-certs signed-release.apk
 
-      - name: Copy CustomPlayer.kt from local source
+      - name: Get timestamp for filename
+        id: datetime
         run: |
+          TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+
+      - name: Download CustomPlayer.kt via GitHub API
+        run: |
+          # Try GitHub API first, fallback to local copy
+          curl -H "Accept: application/vnd.github.raw+json" \
+            -o CustomPlayer.kt \
+            "https://api.github.com/repos/mpv-android/mpv-android/contents/app/src/main/java/is/xyz/mpv/CustomPlayer.kt" || \
           if [ -f "app/src/main/java/is/xyz/mpv/CustomPlayer.kt" ]; then
             cp app/src/main/java/is/xyz/mpv/CustomPlayer.kt ./
-            echo "CustomPlayer.kt copied successfully"
+            echo "Used local CustomPlayer.kt"
           else
-            echo "CustomPlayer.kt not found at app/src/main/java/is/xyz/mpv/CustomPlayer.kt"
-            echo "Available files in that directory:"
-            ls -la app/src/main/java/is/xyz/mpv/ || true
-            # Create a dummy file so the zip step doesn't fail
-            echo "// CustomPlayer.kt not found in this build" > CustomPlayer.kt
+            echo "// CustomPlayer.kt not available" > CustomPlayer.kt
+            echo "Created placeholder CustomPlayer.kt"
           fi
 
-      - name: Create zip file with APK and CustomPlayer.kt
+      - name: Create zip file with timestamp
         run: |
-          mkdir -p release_package
-          cp signed-release.apk release_package/
-          cp CustomPlayer.kt release_package/
-          cp build_error_log.txt release_package/
-          zip -r mpv-android-release-${{ github.run_number }}.zip release_package/
-
-      - name: Upload signed ARM64 release
-        uses: actions/upload-artifact@v4
-        with:
-          name: mpv-android-arm64-release-signed-${{ github.run_number }}
-          path: signed-release.apk
+          # Rename APK with timestamp
+          mv signed-release.apk "mpv-android-arm64-${{ steps.datetime.outputs.timestamp }}.apk"
+          
+          # Create zip with timestamp
+          zip "mpv-android-build-${{ steps.datetime.outputs.timestamp }}.zip" \
+            "mpv-android-arm64-${{ steps.datetime.outputs.timestamp }}.apk" \
+            "CustomPlayer.kt" \
+            "build_error_log.txt"
 
       - name: Upload release zip package
         uses: actions/upload-artifact@v4
         with:
-          name: mpv-android-release-package-${{ github.run_number }}
-          path: mpv-android-release-${{ github.run_number }}.zip
+          name: mpv-android-release-${{ steps.datetime.outputs.timestamp }}
+          path: mpv-android-build-${{ steps.datetime.outputs.timestamp }}.zip
 
-      - name: Upload build logs
+      - name: Upload individual APK
         uses: actions/upload-artifact@v4
         with:
-          name: build_error_log
-          path: build_error_log.txt
+          name: mpv-android-apk-${{ steps.datetime.outputs.timestamp }}
+          path: mpv-android-arm64-${{ steps.datetime.outputs.timestamp }}.apk
