@@ -2,7 +2,6 @@ package `is`.xyz.mpv
 
 import android.app.Activity
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
@@ -22,9 +21,11 @@ class CustomPlayer : Activity() {
     private lateinit var mpvView: MPVSurfaceView
     private var currentVideoPath: String? = null
     private var isMpvInitialized = false
-    private var shouldRestorePlayback = false
-    private var savedPlaybackPosition = 0.0
-    private var wasPaused = false
+    
+    // Change these from private to internal (accessible within same module)
+    var shouldRestorePlayback = false
+    var savedPlaybackPosition = 0.0
+    var wasPaused = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
