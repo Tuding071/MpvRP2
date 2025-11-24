@@ -1,51 +1,37 @@
 package is.xyz.mpv
 
-import android.content.Context
+import android.app.Activity
 import android.os.Bundle
+import android.view.SurfaceHolder
 import android.view.SurfaceView
-import androidx.activity.ComponentActivity
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.AndroidView
 
-class CustomPlayer : ComponentActivity() {
+class CustomPlayer : Activity() {
     companion object {
         init {
             System.loadLibrary("mpv")
         }
     }
 
+    private lateinit var mpvView: MPVSurfaceView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Initialize mpv
-        MPVLib.create(this)
+        // Initialize mpv in two steps as per main.cpp
+        MPVLib.create(this)  // First create
+        MPVLib.init()        // Then initialize
         
-        setContent {
-            VideoSurface()
-        }
+        // Create and set the surface view
+        mpvView = MPVSurfaceView(this)
+        setContentView(mpvView)
         
         // Load video from intent
         intent?.data?.let { uri ->
-            loadFile(uri.toString())
+            MPVLib.loadFile(uri.toString())
+        } ?: run {
+            // You can load a default file here for testing
+            // MPVLib.loadFile("/sdcard/test.mp4")
         }
-    }
-    
-    @Composable
-    private fun VideoSurface() {
-        AndroidView(
-            factory = { context ->
-                MPVSurfaceView(context).apply {
-                    // Surface view will handle video rendering
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-    
-    private fun loadFile(path: String) {
-        MPVLib.command(arrayOf("loadfile", path))
     }
 
     override fun onDestroy() {
@@ -54,21 +40,21 @@ class CustomPlayer : ComponentActivity() {
     }
 }
 
-// Simple SurfaceView for mpv
-class MPVSurfaceView(context: Context) : SurfaceView(context) {
+// SurfaceView that handles mpv rendering
+class MPVSurfaceView(context: android.content.Context) : SurfaceView(context), SurfaceHolder.Callback {
     init {
-        holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceCreated(holder: SurfaceHolder) {
-                MPVLib.attachSurface(holder.surface)
-            }
+        holder.addCallback(this)
+    }
 
-            override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-                // Handle surface changes if needed
-            }
+    override fun surfaceCreated(holder: SurfaceHolder) {
+        MPVLib.attachSurface(holder.surface)
+    }
 
-            override fun surfaceDestroyed(holder: SurfaceHolder) {
-                MPVLib.detachSurface()
-            }
-        })
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        // Surface changed
+    }
+
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
+        MPVLib.detachSurface()
     }
 }
