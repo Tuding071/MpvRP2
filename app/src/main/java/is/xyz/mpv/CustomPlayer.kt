@@ -74,9 +74,12 @@ class CustomPlayer : Activity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         if (isMpvInitialized) {
-            // Save playback state
-            outState.putBoolean("wasPlaying", !MPVLib.getPropertyBoolean("pause") ?: false)
-            outState.putDouble("currentPosition", MPVLib.getPropertyDouble("time-pos") ?: 0.0)
+            // Save playback state - use safe calls for nullable properties
+            val isPaused = MPVLib.getPropertyBoolean("pause") ?: true
+            val timePos = MPVLib.getPropertyDouble("time-pos") ?: 0.0
+            
+            outState.putBoolean("wasPlaying", !isPaused)
+            outState.putDouble("currentPosition", timePos)
         }
     }
 
@@ -84,9 +87,12 @@ class CustomPlayer : Activity() {
         super.onPause()
         Log.d(TAG, "onPause - pausing playback")
         if (isMpvInitialized) {
-            // Save current state
-            wasPlaying = !(MPVLib.getPropertyBoolean("pause") ?: true)
-            currentPosition = MPVLib.getPropertyDouble("time-pos") ?: 0.0
+            // Save current state - use safe calls for nullable properties
+            val isPaused = MPVLib.getPropertyBoolean("pause") ?: true
+            val timePos = MPVLib.getPropertyDouble("time-pos") ?: 0.0
+            
+            wasPlaying = !isPaused
+            currentPosition = timePos
             
             // Pause playback but DON'T destroy
             MPVLib.setPropertyBoolean("pause", true)
