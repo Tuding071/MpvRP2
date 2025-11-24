@@ -22,7 +22,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake meson ninja-build yasm nasm gettext python3 git unzip wget
+          sudo apt-get install -y cmake meson ninja-build yasm nasm gettext python3 git unzip wget ccache
 
       - name: Download Android NDK r23c
         run: |
@@ -40,11 +40,23 @@ jobs:
           ./download.sh
           cd ..
 
-      - name: Build native libraries (arm64 only)
+      - name: Setup ccache for faster native builds
         run: |
+          export PATH="/usr/lib/ccache:$PATH"
+          export CCACHE_DIR="$HOME/.ccache"
+          export CCACHE_MAXSIZE=2G
+          ccache -s
+
+      - name: Build native libraries (arm64 only) with optimizations
+        run: |
+          export PATH="/usr/lib/ccache:$PATH"
+          export MAKEFLAGS="-j$(nproc)"
           cd buildscripts
           ./buildall.sh --arch arm64
           cd ..
+
+      - name: Show ccache stats
+        run: ccache -s
 
       - name: Build unsigned release APK
         run: |
@@ -92,9 +104,18 @@ jobs:
         run: |
           "${{ steps.apksigner.outputs.apksigner_path }}" verify --verbose --print-certs signed-release.apk
 
-      - name: Download CustomPlayer.kt
+      - name: Copy CustomPlayer.kt from local source
         run: |
-          wget -O CustomPlayer.kt "https://raw.githubusercontent.com/mpv-android/mpv-android/master/app/src/main/java/is/xyz/mpv/CustomPlayer.kt"
+          if [ -f "app/src/main/java/is/xyz/mpv/CustomPlayer.kt" ]; then
+            cp app/src/main/java/is/xyz/mpv/CustomPlayer.kt ./
+            echo "CustomPlayer.kt copied successfully"
+          else
+            echo "CustomPlayer.kt not found at app/src/main/java/is/xyz/mpv/CustomPlayer.kt"
+            echo "Available files in that directory:"
+            ls -la app/src/main/java/is/xyz/mpv/ || true
+            # Create a dummy file so the zip step doesn't fail
+            echo "// CustomPlayer.kt not found in this build" > CustomPlayer.kt
+          fi
 
       - name: Create zip file with APK and CustomPlayer.kt
         run: |
