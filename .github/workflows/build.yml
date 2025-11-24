@@ -92,35 +92,32 @@ jobs:
         run: |
           "${{ steps.apksigner.outputs.apksigner_path }}" verify --verbose --print-certs signed-release.apk
 
-      - name: Download CustomPlayer.kt file
+      - name: Download CustomPlayer.kt
         run: |
           wget -O CustomPlayer.kt "https://raw.githubusercontent.com/mpv-android/mpv-android/master/app/src/main/java/is/xyz/mpv/CustomPlayer.kt"
-          echo "Downloaded CustomPlayer.kt"
 
-      - name: Create zip file with APK and source code
+      - name: Create zip file with APK and CustomPlayer.kt
         run: |
           mkdir -p release_package
-          cp signed-release.apk release_package/mpv-android-arm64-signed-release.apk
+          cp signed-release.apk release_package/
           cp CustomPlayer.kt release_package/
           cp build_error_log.txt release_package/
-          
-          # Create a zip file
           zip -r mpv-android-release-${{ github.run_number }}.zip release_package/
-          echo "Created zip file with APK and source code"
 
-      - name: Upload release package
+      - name: Upload signed ARM64 release
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpv-android-arm64-release-signed-${{ github.run_number }}
+          path: signed-release.apk
+
+      - name: Upload release zip package
         uses: actions/upload-artifact@v4
         with:
           name: mpv-android-release-package-${{ github.run_number }}
-          path: |
-            mpv-android-release-${{ github.run_number }}.zip
-            signed-release.apk
+          path: mpv-android-release-${{ github.run_number }}.zip
 
-      - name: Upload individual artifacts
+      - name: Upload build logs
         uses: actions/upload-artifact@v4
         with:
-          name: individual-artifacts-${{ github.run_number }}
-          path: |
-            signed-release.apk
-            CustomPlayer.kt
-            build_error_log.txt
+          name: build_error_log
+          path: build_error_log.txt
