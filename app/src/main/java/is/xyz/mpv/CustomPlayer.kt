@@ -18,8 +18,8 @@ class CustomPlayer : Activity() {
     private var isMpvInitialized = false
     private var activityIsForeground = false
     
-    // Restoration state
-    private var shouldRestorePlayback = false
+    // Change from private to internal for access from MPVSurfaceView
+    internal var shouldRestorePlayback = false
     private var savedPlaybackPosition = 0.0
     private var wasPaused = false
 
