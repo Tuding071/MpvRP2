@@ -2,6 +2,7 @@ package `is`.xyz.mpv
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 
@@ -16,19 +17,36 @@ class CustomPlayer : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("MPV", "CustomPlayer onCreate")
         
-        // Initialize mpv
+        // Initialize mpv (this should match the original app's flow)
         MPVLib.create(this)
+        
+        // Set basic options like the original app would
+        MPVLib.setOptionString("vo", "gpu")
+        MPVLib.setOptionString("hwdec", "auto")
+        
         MPVLib.init()
         
-        // Create and set the surface view
+        // Create surface view
         mpvView = MPVSurfaceView(this)
         setContentView(mpvView)
         
-        // Load video from intent
+        // Load video
         intent?.data?.let { uri ->
+            Log.d("MPV", "Loading video: $uri")
             MPVLib.command(arrayOf("loadfile", uri.toString()))
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        MPVLib.setPropertyBoolean("pause", true)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        MPVLib.setPropertyBoolean("pause", false)
     }
 
     override fun onDestroy() {
@@ -37,21 +55,24 @@ class CustomPlayer : Activity() {
     }
 }
 
-// Simple SurfaceView for mpv
 class MPVSurfaceView(context: android.content.Context) : SurfaceView(context), SurfaceHolder.Callback {
     init {
         holder.addCallback(this)
+        // Ensure we have a transparent background
+        setZOrderOnTop(false)
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
+        Log.d("MPV", "Surface created")
         MPVLib.attachSurface(holder.surface)
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        // Handle surface changes
+        Log.d("MPV", "Surface changed: $width x $height")
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
+        Log.d("MPV", "Surface destroyed")
         MPVLib.detachSurface()
     }
 }
