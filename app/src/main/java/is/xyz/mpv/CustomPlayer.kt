@@ -14,17 +14,20 @@ class CustomPlayer : Activity() {
     }
 
     private lateinit var mpvView: MPVSurfaceView
+    private var currentVideoPath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d("MPV", "CustomPlayer onCreate")
         
-        // Initialize mpv (this should match the original app's flow)
+        // Initialize mpv
         MPVLib.create(this)
         
-        // Set basic options like the original app would
+        // Set video output options - CRITICAL for video display
         MPVLib.setOptionString("vo", "gpu")
-        MPVLib.setOptionString("hwdec", "auto")
+        MPVLib.setOptionString("hwdec", "no")
+        MPVLib.setOptionString("gpu-context", "android")
+        MPVLib.setOptionString("profile", "fast")
         
         MPVLib.init()
         
@@ -32,10 +35,35 @@ class CustomPlayer : Activity() {
         mpvView = MPVSurfaceView(this)
         setContentView(mpvView)
         
-        // Load video
+        // Load video from intent - FIX: Load on surface ready, not here
         intent?.data?.let { uri ->
-            Log.d("MPV", "Loading video: $uri")
-            MPVLib.command(arrayOf("loadfile", uri.toString()))
+            currentVideoPath = uri.toString()
+            Log.d("MPV", "Video URI received: $currentVideoPath")
+            // Don't load here - wait for surface
+        }
+    }
+
+    private fun loadCurrentVideo() {
+        currentVideoPath?.let { path ->
+            Log.d("MPV", "Loading video: $path")
+            MPVLib.command(arrayOf("loadfile", path))
+            // Force refresh surface
+            MPVLib.setPropertyBoolean("pause", false)
+        }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent?) {
+        super.onNewIntent(intent)
+        Log.d("MPV", "onNewIntent - new video selected")
+        
+        // Handle new video selection - FIX: This allows playing ANY video
+        intent?.data?.let { uri ->
+            currentVideoPath = uri.toString()
+            Log.d("MPV", "New video selected: $currentVideoPath")
+            
+            // Stop current video and load new one
+            MPVLib.command(arrayOf("stop"))
+            loadCurrentVideo()
         }
     }
 
@@ -58,17 +86,23 @@ class CustomPlayer : Activity() {
 class MPVSurfaceView(context: android.content.Context) : SurfaceView(context), SurfaceHolder.Callback {
     init {
         holder.addCallback(this)
-        // Ensure we have a transparent background
         setZOrderOnTop(false)
+        // Ensure surface type is correct for video
+        holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
-        Log.d("MPV", "Surface created")
+        Log.d("MPV", "Surface created - attaching to mpv")
         MPVLib.attachSurface(holder.surface)
+        
+        // FIX: Load video ONLY after surface is ready
+        (context as? CustomPlayer)?.loadCurrentVideo()
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         Log.d("MPV", "Surface changed: $width x $height")
+        // Force video refresh on surface change
+        MPVLib.setPropertyBoolean("video-reload", true)
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
